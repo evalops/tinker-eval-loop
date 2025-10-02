@@ -1,0 +1,20 @@
+{"instruction": "What is 2 + 2?", "output": "2 + 2 = 4"}
+{"instruction": "What is the capital of France?", "output": "The capital of France is Paris."}
+{"instruction": "Translate 'hello' to Spanish.", "output": "'Hello' in Spanish is 'hola'."}
+{"instruction": "What color is the sky?", "output": "The sky is typically blue during the day."}
+{"instruction": "Who wrote Romeo and Juliet?", "output": "William Shakespeare wrote Romeo and Juliet."}
+{"instruction": "What is photosynthesis?", "output": "Photosynthesis is the process by which plants convert sunlight into energy."}
+{"instruction": "Name a programming language.", "output": "Python is a popular programming language."}
+{"instruction": "What does HTML stand for?", "output": "HTML stands for HyperText Markup Language."}
+{"instruction": "What is the largest planet in our solar system?", "output": "Jupiter is the largest planet in our solar system."}
+{"instruction": "What is 10 x 5?", "output": "10 x 5 = 50"}
+{"instruction": "What is the boiling point of water?", "output": "The boiling point of water is 100°C (212°F) at sea level."}
+{"instruction": "Who painted the Mona Lisa?", "output": "Leonardo da Vinci painted the Mona Lisa."}
+{"instruction": "What does CPU stand for?", "output": "CPU stands for Central Processing Unit."}
+{"instruction": "What year did World War II end?", "output": "World War II ended in 1945."}
+{"instruction": "What is the speed of light?", "output": "The speed of light is approximately 299,792,458 meters per second."}
+{"instruction": "Name the primary colors.", "output": "The primary colors are red, blue, and yellow."}
+{"instruction": "What is the chemical symbol for gold?", "output": "The chemical symbol for gold is Au."}
+{"instruction": "How many continents are there?", "output": "There are 7 continents: Africa, Antarctica, Asia, Europe, North America, Oceania, and South America."}
+{"instruction": "What is the smallest prime number?", "output": "The smallest prime number is 2."}
+{"instruction": "Define 'gravity'.", "output": "Gravity is the force that attracts objects toward each other, especially the force that pulls objects toward Earth."}
