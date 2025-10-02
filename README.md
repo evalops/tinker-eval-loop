@@ -97,6 +97,19 @@ This is a minimal prototype to demonstrate how to build a useful system on top o
 
 - **Advanced EvalOps features**, such as quality gates, automated alerts when metrics drop below thresholds, or integration with regression testing schedules.
 
+## Testing
+
+Run the test suite to validate all components:
+
+```bash
+pytest tests/ -v
+```
+
+The test suite includes:
+- **Unit tests** for EvalOps client, config validation, and data loading
+- **Integration tests** for the training loop with mocked Tinker/EvalOps services
+- **Coverage** for early stopping, LR decay, and error handling
+
 ## Disclaimer
 
 This code does not run training jobs by itself; it serves as a scaffold. You'll need an active Tinker API key and appropriate computing quotas to execute the training and evaluation steps. Modify the script to fit your particular needs and model lineup. The hyperparameters and thresholds in the sample config are placeholders and should be adjusted based on your use case and dataset size.
