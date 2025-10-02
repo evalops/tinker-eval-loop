@@ -50,13 +50,20 @@ try:
 except ImportError:
     EvalOpsClient = None
 
+try:
+    from config_schema import TrainingConfig, load_and_validate_config
+    from data_loader import DataLoader
+except ImportError:
+    TrainingConfig = None
+    DataLoader = None
 
-def load_config(config_path: str) -> Dict[str, Any]:
-    with open(config_path, 'r') as f:
-        return json.load(f)
 
-
-def prepare_training_data(train_file: str, tokenizer) -> list:
+def prepare_training_data(
+    train_file: str,
+    tokenizer,
+    max_seq_length: int = 2048,
+    deduplicate: bool = True,
+) -> list:
     """Load and convert training data into a list of Tinker Datum objects.
 
     The Tinker cookbook includes utilities for building supervised examples via
@@ -68,11 +75,18 @@ def prepare_training_data(train_file: str, tokenizer) -> list:
     Args:
         train_file: Path to the training JSON/JSONL file.
         tokenizer: A tokenizer object obtained from the Tinker training client.
+        max_seq_length: Maximum sequence length for tokenization.
+        deduplicate: Whether to deduplicate examples.
 
     Returns:
         List of `tinker.types.Datum` objects representing the training batch.
     """
-    return []
+    if DataLoader is None:
+        print("Warning: DataLoader not available. Returning empty dataset.")
+        return []
+
+    loader = DataLoader(max_seq_length=max_seq_length)
+    return loader.prepare_training_data(train_file, tokenizer, deduplicate=deduplicate)
 
 
 def run_training_round(training_client, datums: list, learning_rate: float) -> None:
@@ -153,21 +167,24 @@ async def run_evaluations(
 
 async def async_main(config_path: str) -> None:
     """Main training loop with async EvalOps integration."""
-    config = load_config(config_path)
+    if TrainingConfig is None:
+        raise ImportError("config_schema module required. Please ensure all dependencies are installed.")
+
+    config = load_and_validate_config(config_path)
 
     if tinker is None:
         raise ImportError("The `tinker` package is not installed.  Please install it via `pip install tinker`.")
 
     service_client = tinker.ServiceClient()
-    base_model = config["base_model"]
-    max_rounds = config.get("max_rounds", 3)
-    learning_rate = config.get("learning_rate", 1e-4)
-    eval_threshold = config.get("eval_threshold", 0.8)
-    tasks = config.get("eval_tasks", [])
-    renderer_name = config.get("renderer_name", "default")
+    base_model = config.base_model
+    max_rounds = config.max_rounds
+    learning_rate = config.learning_rate
+    eval_threshold = config.eval_threshold
+    tasks = config.eval_tasks
+    renderer_name = config.renderer_name
 
-    evalops_enabled = config.get("evalops_enabled", False)
-    test_suite_id = config.get("evalops_test_suite_id")
+    evalops_enabled = config.evalops_enabled
+    test_suite_id = config.evalops_test_suite_id
     
     evalops_client = None
     if evalops_enabled:
@@ -187,12 +204,14 @@ async def async_main(config_path: str) -> None:
 
     tokenizer = training_client.get_tokenizer()
 
-    train_file = config.get("train_file")
-    if not train_file:
-        raise ValueError("train_file must be specified in the config")
-    datums = prepare_training_data(train_file, tokenizer)
+    datums = prepare_training_data(
+        train_file=config.train_file,
+        tokenizer=tokenizer,
+        max_seq_length=config.max_seq_length,
+        deduplicate=True,
+    )
     if not datums:
-        print("Warning: no training data loaded.  Please implement prepare_training_data().")
+        print("Warning: no training data loaded. Check that your training file has valid examples.")
 
     try:
         for round_idx in range(1, max_rounds + 1):
@@ -221,7 +240,7 @@ async def async_main(config_path: str) -> None:
                 break
             else:
                 print(f"Score below threshold ({eval_threshold}).  Preparing next round...")
-                learning_rate *= config.get("lr_decay", 0.8)
+                learning_rate *= config.lr_decay
 
         print("Training loop completed.")
     finally:

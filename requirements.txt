@@ -8,4 +8,13 @@ numpy>=1.24.0
 # EvalOps integration
 httpx>=0.24.0        # Async HTTP client for EvalOps API calls
 
+# Configuration and validation
+pydantic>=2.0.0      # Config schema validation
+
+# Testing (dev dependencies)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.11.0
+respx>=0.20.0        # Mock HTTPX requests
+
 # Note: You may need additional packages depending on your data processing pipeline
