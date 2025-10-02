@@ -84,7 +84,12 @@ This project contains two main components:
 | `data_loader.py` | JSONL data loader with proper Tinker renderers, loss masking, validation, and deduplication. |
 | `data_selector.py` | Utilities for mining hard examples based on evaluation failures. |
 | `hyperparam_utils.py` | Tinker's recommended LR formula and warmup/cosine scheduler. |
-| `simple_eval.py` | Minimal working evaluator for demo (replace with Inspect AI for production). |
+| `simple_eval.py` | Minimal working evaluator for demo (fallback if Inspect AI unavailable). |
+| `inspect_eval.py` | Inspect AI task integration with Tinker sampling adapter. |
+| `logger.py` | Structured JSON logging for metrics and events. |
+| `checkpoint_manager.py` | Checkpoint save/resume for interrupted runs. |
+| `error_handling.py` | Retry logic with exponential backoff and rate limiting. |
+| `mock_tinker.py` | Mock Tinker client for offline demos and CI. |
 | `requirements.txt` | Dependencies required to run the script. |
 | `tests/` | Unit and integration tests for all components. |
 
@@ -147,6 +152,14 @@ See [DEMO.md](DEMO.md) for a detailed walkthrough of what happens during the dem
    ```
 
    The script will fine‑tune the specified base model using LoRA, run evaluations, and iteratively improve the model until it meets your quality targets or a maximum number of rounds. If EvalOps integration is enabled, each evaluation round will be automatically submitted to your EvalOps workspace for tracking and analysis.
+
+6. **Resume an interrupted run:**
+
+   ```bash
+   python trainer_with_eval.py --config eval_loop_config.json --resume
+   ```
+
+   Continues from the latest checkpoint in `runs/` directory.
 
 ## EvalOps Integration
 
@@ -216,7 +229,11 @@ The test suite includes:
 - Uses `save_weights_for_sampler()` for evaluation (not `save_state()` which includes optimizer state)
 - Supports Tinker's recommended LR formula: `LR = 5e-5 × 10 × (2000/H_m)^P_m` with model-specific exponents
 - Includes warmup + cosine decay scheduler for stable training
-- Gracefully falls back when tinker-cookbook unavailable (for testing/development)
+- Inspect AI integration with fallback to simple evaluator
+- Structured JSON logging to `runs/<timestamp>/metrics.jsonl`
+- Checkpoint resume with `--resume` flag
+- Mock mode for offline demos and CI (set `TINKER_MOCK=1`)
+- Gracefully falls back when tinker-cookbook unavailable
 
 ## Disclaimer
 
