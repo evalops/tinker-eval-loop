@@ -8,7 +8,7 @@ try:
     from inspect_ai import Task, task, eval_async
     from inspect_ai.dataset import MemoryDataset, Sample
     from inspect_ai.model import GenerateConfig, Model
-    from inspect_ai.scorer import match, includes
+    from inspect_ai.scorer import includes
     from inspect_ai.solver import generate
     
     QA_SAMPLES = [

@@ -32,7 +32,7 @@ mock_renderers.get_renderer = Mock(return_value=None)
 sys.modules['tinker_cookbook'] = Mock()
 sys.modules['tinker_cookbook.renderers'] = mock_renderers
 
-from data_loader import DataLoader
+from data_loader import DataLoader  # noqa: E402
 
 
 class MockTokenizer:

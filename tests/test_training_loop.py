@@ -21,7 +21,7 @@ mock_tinker.types = MockTypes
 sys.modules['tinker'] = mock_tinker
 sys.modules['tinker.types'] = MockTypes
 
-from trainer_with_eval import async_main
+from trainer_with_eval import async_main  # noqa: E402
 
 
 @pytest.mark.asyncio
