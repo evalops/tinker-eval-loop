@@ -56,7 +56,7 @@ class TestTrainingLoop:
                 with patch("trainer_with_eval.run_evaluations", new=AsyncMock(return_value=0.85)):
                     await async_main(str(config_file))
 
-        assert mock_training_client.save_state.call_count == 1
+        assert mock_training_client.save_weights_for_sampler.call_count == 1
 
     async def test_full_rounds_below_threshold(self, tmp_path):
         """Training runs all rounds when threshold never met."""
@@ -85,7 +85,7 @@ class TestTrainingLoop:
                 with patch("trainer_with_eval.run_evaluations", new=AsyncMock(return_value=0.7)):
                     await async_main(str(config_file))
 
-        assert mock_training_client.save_state.call_count == 3
+        assert mock_training_client.save_weights_for_sampler.call_count == 3
 
     async def test_evalops_integration_called(self, tmp_path):
         """EvalOps client is called when enabled."""
@@ -135,7 +135,7 @@ class TestTrainingLoop:
         mock_evalops_client.close.assert_called_once()
 
     async def test_lr_decay_across_rounds(self, tmp_path):
-        """Learning rate decays correctly across rounds."""
+        """Learning rate decays correctly across rounds when warmup disabled."""
         train_file = tmp_path / "train.jsonl"
         train_file.write_text('{"instruction": "test", "output": "result"}\n')
 
@@ -147,7 +147,8 @@ class TestTrainingLoop:
             f'"max_rounds": 3, '
             f'"learning_rate": 1.0, '
             f'"lr_decay": 0.5, '
-            f'"eval_threshold": 0.99'
+            f'"eval_threshold": 0.99, '
+            f'"warmup_steps": 0'
             f'}}'
         )
 
@@ -160,7 +161,7 @@ class TestTrainingLoop:
         mock_training_client = MagicMock()
         mock_client.create_lora_training_client.return_value = mock_training_client
         mock_training_client.get_tokenizer.return_value = MagicMock()
-        mock_training_client.save_state.return_value = "tinker://checkpoint"
+        mock_training_client.save_weights_for_sampler.return_value = MagicMock()
 
         with patch("trainer_with_eval.tinker.ServiceClient", return_value=mock_client):
             with patch("trainer_with_eval.prepare_training_data", return_value=[MagicMock()]):

@@ -190,10 +190,17 @@ async def async_main(config_path: str) -> None:
     service_client = tinker.ServiceClient()
     base_model = config.base_model
     max_rounds = config.max_rounds
-    learning_rate = config.learning_rate
     eval_threshold = config.eval_threshold
     tasks = config.eval_tasks
     renderer_name = config.renderer_name
+
+    if config.use_recommended_lr and get_recommended_lr:
+        learning_rate = get_recommended_lr(base_model)
+        print(f"Using recommended LR for {base_model}: {learning_rate:.2e}")
+    else:
+        learning_rate = config.learning_rate
+    
+    global_step = 0
 
     evalops_enabled = config.evalops_enabled
     test_suite_id = config.evalops_test_suite_id
@@ -232,7 +239,21 @@ async def async_main(config_path: str) -> None:
     try:
         for round_idx in range(1, max_rounds + 1):
             print(f"\n=== Training round {round_idx}/{max_rounds} ===")
-            run_training_round(training_client, datums, learning_rate)
+            
+            if get_lr_with_warmup and config.warmup_steps > 0:
+                current_lr = get_lr_with_warmup(
+                    step=global_step,
+                    base_lr=learning_rate,
+                    warmup_steps=config.warmup_steps,
+                    max_steps=config.max_steps,
+                    min_lr=config.min_lr,
+                )
+                print(f"  Step {global_step}: LR = {current_lr:.2e}")
+            else:
+                current_lr = learning_rate
+            
+            run_training_round(training_client, datums, current_lr)
+            global_step += config.steps_per_round
 
             print("Saving model checkpoint...")
             weights_uri = training_client.save_weights_for_sampler(name=f"round_{round_idx}")
