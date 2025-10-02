@@ -8,8 +8,10 @@ from typing import Any, Dict, List, Optional
 
 try:
     from tinker import types
+    from tinker_cookbook import renderers
 except ImportError:
     types = None
+    renderers = None
 
 
 class DataLoader:
@@ -94,18 +96,20 @@ class DataLoader:
         self,
         train_file: str,
         tokenizer: Any,
+        renderer_name: str = "llama3",
         deduplicate: bool = True,
     ) -> List[Any]:
         """
-        Load and convert training data into Tinker Datum objects.
+        Load and convert training data into Tinker Datum objects using proper renderers.
 
         Args:
             train_file: Path to training JSONL file.
             tokenizer: Tokenizer from Tinker training client.
+            renderer_name: Name of the renderer to use (e.g., "llama3", "qwen3").
             deduplicate: Whether to deduplicate examples.
 
         Returns:
-            List of tinker.types.Datum objects.
+            List of tinker.types.Datum objects with proper loss masking.
         """
         if types is None:
             raise ImportError("tinker package required for data preparation")
@@ -127,29 +131,62 @@ class DataLoader:
             print(f"Deduplicated to {len(unique_examples)} unique examples")
             valid_examples = unique_examples
 
+        renderer = None
+        if renderers is not None:
+            try:
+                renderer = renderers.get_renderer(renderer_name, tokenizer)
+                print(f"Using {renderer_name} renderer for proper loss masking")
+            except Exception as e:
+                print(f"Warning: Could not load renderer, falling back to simple tokenization: {e}")
+
         datums = []
         for ex in valid_examples:
             instruction = ex["instruction"]
             input_text = ex.get("input", "")
             output_text = ex["output"]
 
-            if input_text:
-                prompt = f"{instruction}\n\nInput: {input_text}\n\nResponse:"
+            if renderer is not None:
+                user_content = f"{instruction}\n\nInput: {input_text}" if input_text else instruction
+                messages = [
+                    {"role": "user", "content": user_content},
+                    {"role": "assistant", "content": output_text},
+                ]
+
+                try:
+                    tokens, weights = renderer.build_supervised_example(messages)
+                    token_list = tokens.to_ints() if hasattr(tokens, 'to_ints') else tokens
+                    
+                    if len(token_list) > self.max_seq_length:
+                        continue
+
+                    input_tokens = token_list[:-1]
+                    target_tokens = token_list[1:]
+                    weights = weights[1:]
+
+                    datum = types.Datum(
+                        model_input=types.ModelInput.from_ints(tokens=input_tokens),
+                        loss_fn_inputs={"weights": weights, "target_tokens": target_tokens},
+                    )
+                    datums.append(datum)
+                except Exception as e:
+                    print(f"Warning: Skipping example due to rendering error: {e}")
             else:
-                prompt = f"{instruction}\n\nResponse:"
+                if input_text:
+                    prompt = f"{instruction}\n\nInput: {input_text}\n\nResponse:"
+                else:
+                    prompt = f"{instruction}\n\nResponse:"
 
-            full_text = f"{prompt} {output_text}"
-            
-            tokens = tokenizer.encode(full_text)
-            if len(tokens) > self.max_seq_length:
-                print(f"Warning: Skipping example with {len(tokens)} tokens (max: {self.max_seq_length})")
-                continue
+                full_text = f"{prompt} {output_text}"
+                tokens = tokenizer.encode(full_text)
+                
+                if len(tokens) > self.max_seq_length:
+                    continue
 
-            datum = types.Datum(
-                model_input=tokens,
-                loss_fn_inputs={"target": tokens},
-            )
-            datums.append(datum)
+                datum = types.Datum(
+                    model_input=tokens,
+                    loss_fn_inputs={"target": tokens},
+                )
+                datums.append(datum)
 
         print(f"Prepared {len(datums)} training datums")
         return datums

@@ -217,6 +217,7 @@ async def async_main(config_path: str) -> None:
         train_file=config.train_file,
         tokenizer=tokenizer,
         max_seq_length=config.max_seq_length,
+        renderer_name=config.renderer_name,
         deduplicate=True,
     )
     if not datums:
