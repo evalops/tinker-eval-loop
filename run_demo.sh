@@ -7,16 +7,17 @@ echo "╚═══════════════════════�
 echo ""
 
 if [ -z "$TINKER_API_KEY" ]; then
-    echo "❌ Error: TINKER_API_KEY environment variable not set"
+    echo "⚠️  No TINKER_API_KEY found - running in MOCK MODE"
     echo ""
-    echo "Please set your Tinker API key:"
+    echo "Mock mode simulates Tinker training locally (no GPU, no cloud calls)."
+    echo "To use real Tinker infrastructure, set:"
     echo "  export TINKER_API_KEY=sk-your-key-here"
     echo ""
-    exit 1
+    export TINKER_MOCK=1
+else
+    echo "✓ Tinker API key found - using real Tinker infrastructure"
+    echo ""
 fi
-
-echo "✓ Tinker API key found"
-echo ""
 
 if [ ! -d ".venv" ]; then
     echo "📦 Creating virtual environment..."

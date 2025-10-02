@@ -28,11 +28,20 @@ from typing import Dict, Any, Optional
 
 import numpy as np
 
-try:
-    import tinker
-    from tinker import types
-except ImportError:
-    tinker = None
+USE_MOCK = os.getenv("TINKER_MOCK", "0") == "1"
+
+if USE_MOCK:
+    print("[MOCK MODE] Using offline mock Tinker client")
+    from mock_tinker import create_mock_tinker_module
+    tinker = create_mock_tinker_module()
+    types = tinker.types
+else:
+    try:
+        import tinker
+        from tinker import types
+    except ImportError:
+        tinker = None
+        types = None
 
 try:
     from inspect_ai import Task, task
