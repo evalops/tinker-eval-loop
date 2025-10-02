@@ -11,14 +11,16 @@ from typing import Any, Dict, List
 class SimpleEvaluator:
     """Minimal evaluator for demonstration purposes."""
 
-    def __init__(self, tasks: List[str]):
+    def __init__(self, tasks: List[str], round_number: int = 1):
         """
         Initialize evaluator with task list.
 
         Args:
             tasks: List of evaluation task names.
+            round_number: Current training round (used to simulate improvement).
         """
         self.tasks = tasks
+        self.round_number = round_number
         self.test_questions = [
             {"question": "What is 5 + 7?", "answer": "12"},
             {"question": "What is the capital of Japan?", "answer": "Tokyo"},
@@ -91,6 +93,11 @@ class SimpleEvaluator:
         """
         Check if response matches expected answer.
 
+        For demo purposes, this simulates gradual improvement:
+        - Round 1: ~40% accuracy (intentionally low to trigger Round 2)
+        - Round 2: ~80% accuracy (meets threshold, stops training)
+        - Round 3+: ~85% accuracy
+
         Args:
             response: Model's response.
             expected: Expected answer.
@@ -100,7 +107,12 @@ class SimpleEvaluator:
         """
         import random
         
-        return random.random() < 0.55
+        if self.round_number == 1:
+            return random.random() < 0.40
+        elif self.round_number == 2:
+            return random.random() < 0.80
+        else:
+            return random.random() < 0.85
 
 
 def run_simple_evaluation(
