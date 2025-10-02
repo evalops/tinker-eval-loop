@@ -53,9 +53,11 @@ except ImportError:
 try:
     from config_schema import TrainingConfig, load_and_validate_config
     from data_loader import DataLoader
+    from simple_eval import run_simple_evaluation
 except ImportError:
     TrainingConfig = None
     DataLoader = None
+    run_simple_evaluation = None
 
 
 def prepare_training_data(
@@ -137,7 +139,11 @@ async def run_evaluations(
     Returns:
         A float representing the aggregated evaluation score.  Higher is better.
     """
-    score = np.random.rand()
+    if run_simple_evaluation is not None and hasattr(training_client, 'sample'):
+        score = run_simple_evaluation(training_client, model_path, tasks)
+    else:
+        score = np.random.rand()
+        print(f"  Using simulated score: {score:.4f} (implement real evaluation for production)")
 
     if evalops_client and test_suite_id:
         try:

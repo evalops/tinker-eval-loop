@@ -2,6 +2,54 @@
 
 This project implements a proof‑of‑concept evaluation‑driven fine‑tuning loop on top of [Tinker](https://tinker-docs.thinkingmachines.ai). The goal is to continuously improve a model by training it using LoRA and then measuring its performance on a suite of evaluation tasks. When the model fails to meet a specified threshold, the loop collects additional data or modifies hyperparameters and launches a new fine‑tuning job.
 
+## How it works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Evaluation-Driven Loop                      │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │ Load Config  │
+    │  & Data      │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │ Fine-Tune    │◄─────────┐
+    │ with LoRA    │          │
+    │ (Tinker)     │          │
+    └──────┬───────┘          │
+           │                  │
+           ▼                  │
+    ┌──────────────┐          │
+    │ Save         │          │
+    │ Checkpoint   │          │
+    └──────┬───────┘          │
+           │                  │
+           ▼                  │
+    ┌──────────────┐          │
+    │ Run Evals    │          │
+    │ (Inspect AI) │          │
+    └──────┬───────┘          │
+           │                  │
+           ├─────────────┐    │
+           │             │    │
+           ▼             ▼    │
+    ┌──────────────┐  ┌────────────┐
+    │ Submit to    │  │ Score ≥    │
+    │ EvalOps      │  │ Threshold? │
+    │ (optional)   │  └─────┬──┬───┘
+    └──────────────┘        │  │
+                            │  │ No: Adjust LR
+                    Yes: ✓  │  │ & select data
+                            │  └──────┘
+                            ▼
+                      ┌──────────┐
+                      │   Done   │
+                      └──────────┘
+```
+
 ## Why evaluation‑driven fine‑tuning?
 
 [Tinker](https://tinker-docs.thinkingmachines.ai) is a low‑level API for LoRA fine‑tuning that offloads distributed training to managed infrastructure. It also provides an evaluation API that can run inline or offline evaluations and integrate with the Inspect AI library. These features make it possible to build a higher‑level service that:
