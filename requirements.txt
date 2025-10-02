@@ -1,8 +1,8 @@
 
-# Core libraries
-tinker>=0.1.0        # Official Tinker client library
-inspect-ai>=0.2.0    # Inspect AI for evaluation tasks (optional but recommended)
-tinker-cookbook>=0.1.0  # Tinker examples and utilities
+# Core libraries (commented out - install when using real Tinker API)
+# tinker>=0.1.0        # Official Tinker client library
+# inspect-ai>=0.2.0    # Inspect AI for evaluation tasks (optional but recommended)
+# tinker-cookbook>=0.1.0  # Tinker examples and utilities
 numpy>=1.24.0
 
 # EvalOps integration

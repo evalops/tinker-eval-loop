@@ -3,11 +3,25 @@ Unit tests for data loader.
 """
 
 import json
+import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
+
+
+class MockTypes:
+    """Mock tinker.types module."""
+    
+    class Datum:
+        def __init__(self, model_input, loss_fn_inputs):
+            self.model_input = model_input
+            self.loss_fn_inputs = loss_fn_inputs
+
+
+sys.modules['tinker'] = Mock()
+sys.modules['tinker.types'] = MockTypes
 
 from data_loader import DataLoader
 
@@ -65,7 +79,7 @@ class TestDataLoader:
 
         assert len(examples) == 2
         captured = capsys.readouterr()
-        assert "invalid JSON" in captured.out.lower()
+        assert "skipping invalid json" in captured.out.lower()
 
     def test_load_jsonl_file_not_found(self):
         """Non-existent file raises FileNotFoundError."""

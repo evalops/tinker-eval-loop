@@ -119,6 +119,7 @@ def run_simple_evaluation(
     model_client: Any,
     model_path: str,
     tasks: List[str],
+    round_number: int = 1,
 ) -> float:
     """
     Run simple evaluation and return aggregate score.
@@ -127,11 +128,12 @@ def run_simple_evaluation(
         model_client: Tinker training client.
         model_path: Path to model checkpoint.
         tasks: List of task names to evaluate.
+        round_number: Current training round number.
 
     Returns:
         Aggregate score between 0.0 and 1.0.
     """
-    evaluator = SimpleEvaluator(tasks)
+    evaluator = SimpleEvaluator(tasks, round_number=round_number)
     results = evaluator.evaluate_model(model_client, model_path)
     
     print(f"  Evaluation complete: {results['correct']}/{results['total']} correct")

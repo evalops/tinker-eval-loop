@@ -2,11 +2,26 @@
 Integration tests for the training loop.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+import sys
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import tempfile
 from pathlib import Path
 
 import pytest
+
+
+class MockTypes:
+    """Mock tinker.types module."""
+    
+    class AdamParams:
+        def __init__(self, learning_rate):
+            self.learning_rate = learning_rate
+
+
+mock_tinker = Mock()
+mock_tinker.types = MockTypes
+sys.modules['tinker'] = mock_tinker
+sys.modules['tinker.types'] = MockTypes
 
 from trainer_with_eval import async_main
 
@@ -98,9 +113,21 @@ class TestTrainingLoop:
         mock_training_client.get_tokenizer.return_value = MagicMock()
         mock_training_client.save_state.return_value = "tinker://checkpoint"
 
+        async def mock_run_evals(*args, **kwargs):
+            evalops_client = kwargs.get('evalops_client')
+            if evalops_client:
+                await evalops_client.submit_training_results(
+                    test_suite_id="suite-123",
+                    round_number=1,
+                    model_checkpoint="tinker://checkpoint",
+                    metrics={"aggregate_score": 0.9},
+                    metadata={}
+                )
+            return 0.9
+
         with patch("trainer_with_eval.tinker.ServiceClient", return_value=mock_tinker_client):
             with patch("trainer_with_eval.prepare_training_data", return_value=[MagicMock()]):
-                with patch("trainer_with_eval.run_evaluations", new=AsyncMock(return_value=0.9)):
+                with patch("trainer_with_eval.run_evaluations", new=mock_run_evals):
                     with patch("trainer_with_eval.EvalOpsClient", return_value=mock_evalops_client):
                         await async_main(str(config_file))
 

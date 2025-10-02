@@ -140,8 +140,10 @@ async def run_evaluations(
     Returns:
         A float representing the aggregated evaluation score.  Higher is better.
     """
-    if run_simple_evaluation is not None and hasattr(training_client, 'sample'):
-        score = run_simple_evaluation(training_client, model_path, tasks)
+    if run_simple_evaluation is not None:
+        score = run_simple_evaluation(
+            training_client, model_path, tasks, round_number=round_number or 1
+        )
     else:
         score = np.random.rand()
         print(f"  Using simulated score: {score:.4f} (implement real evaluation for production)")
