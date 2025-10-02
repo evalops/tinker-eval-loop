@@ -64,14 +64,12 @@ class MockTrainingClient:
         await asyncio.sleep(0.01)
         self.step_count += 1
         self.current_loss *= 0.95
+        current_loss_value = self.current_loss
         
         class AsyncFuture:
-            async def __await__(self):
-                return {"loss": self.current_loss}
-            
             def __await__(self):
                 async def _wait():
-                    return {"loss": self.current_loss}
+                    return {"loss": current_loss_value}
                 return _wait().__await__()
         
         return AsyncFuture()

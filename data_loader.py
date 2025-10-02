@@ -6,12 +6,21 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-try:
-    from tinker import types
-    from tinker_cookbook import renderers
-except ImportError:
-    types = None
+import os
+
+USE_MOCK = os.getenv("TINKER_MOCK", "0") == "1"
+
+if USE_MOCK:
+    from mock_tinker import MockTypes
+    types = MockTypes
     renderers = None
+else:
+    try:
+        from tinker import types
+        from tinker_cookbook import renderers
+    except ImportError:
+        types = None
+        renderers = None
 
 
 class DataLoader:
@@ -111,7 +120,7 @@ class DataLoader:
         Returns:
             List of tinker.types.Datum objects with proper loss masking.
         """
-        if types is None:
+        if types is None and not USE_MOCK:
             raise ImportError("tinker package required for data preparation")
 
         raw_examples = self.load_jsonl(train_file)

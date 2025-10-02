@@ -242,8 +242,8 @@ async def async_main(config_path: str) -> None:
 
     config = load_and_validate_config(config_path)
 
-    if tinker is None:
-        raise ImportError("The `tinker` package is not installed.  Please install it via `pip install tinker`.")
+    if tinker is None and not USE_MOCK:
+        raise ImportError("The `tinker` package is not installed. Please install it via `pip install tinker` or run in mock mode with TINKER_MOCK=1.")
 
     service_client = tinker.ServiceClient()
     base_model = config.base_model

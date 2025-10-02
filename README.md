@@ -91,12 +91,18 @@ This project contains two main components:
 
 Try the minimal working demo (uses 20 sample QA pairs and simulated evaluation):
 
+**Option 1: Mock Mode (No API Key Required)**
+```bash
+./run_demo.sh  # Automatically uses mock mode if no API key
+```
+
+**Option 2: Real Tinker Infrastructure**
 ```bash
 export TINKER_API_KEY=sk-...  # Your Tinker API key
 ./run_demo.sh
 ```
 
-This will run 1-3 training rounds, automatically adjusting the learning rate and triggering Round 2 when scores fall below threshold (0.75). Perfect for understanding the loop before customizing it.
+This will run 1-3 training rounds, automatically adjusting the learning rate and triggering Round 2 when scores fall below threshold (0.75). Mock mode simulates training locally without cloud calls—perfect for understanding the loop before using real infrastructure.
 
 See [DEMO.md](DEMO.md) for a detailed walkthrough of what happens during the demo run.
 
