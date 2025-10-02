@@ -21,7 +21,12 @@ This project contains two main components:
 |------|-------------|
 | `trainer_with_eval.py` | The main script that orchestrates training and evaluation. It connects to Tinker, creates a LoRA training client, runs fine‑tuning, performs evaluations via Inspect AI, and decides whether to launch further training rounds. |
 | `eval_loop_config.json` | A sample configuration file specifying the base model, dataset paths, evaluation tasks, thresholds and hyperparameters. |
+| `evalops_client.py` | Python SDK for submitting evaluation results to EvalOps platform. |
+| `config_schema.py` | Pydantic schema for configuration validation. |
+| `data_loader.py` | JSONL data loader with validation, deduplication, and tokenization. |
+| `data_selector.py` | Utilities for mining hard examples based on evaluation failures. |
 | `requirements.txt` | Dependencies required to run the script. |
+| `tests/` | Unit and integration tests for all components. |
 
 ## Quickstart
 
