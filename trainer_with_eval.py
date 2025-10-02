@@ -287,20 +287,35 @@ async def async_main(config_path: str) -> None:
         for round_idx in range(1, max_rounds + 1):
             print(f"\n=== Training round {round_idx}/{max_rounds} ===")
             
-            if get_lr_with_warmup and config.warmup_steps > 0:
-                current_lr = get_lr_with_warmup(
-                    step=global_step,
+            if hasattr(training_client, 'forward_backward_async'):
+                steps_executed = await run_training_round_async(
+                    training_client=training_client,
+                    datums=datums,
+                    batch_size=config.batch_size,
+                    steps_per_round=config.steps_per_round,
                     base_lr=learning_rate,
+                    step_offset=global_step,
                     warmup_steps=config.warmup_steps,
                     max_steps=config.max_steps,
                     min_lr=config.min_lr,
                 )
-                print(f"  Step {global_step}: LR = {current_lr:.2e}")
+                print(f"  Completed {steps_executed} training steps")
+                global_step += steps_executed
             else:
-                current_lr = learning_rate
-            
-            run_training_round(training_client, datums, current_lr)
-            global_step += config.steps_per_round
+                if get_lr_with_warmup and config.warmup_steps > 0:
+                    current_lr = get_lr_with_warmup(
+                        step=global_step,
+                        base_lr=learning_rate,
+                        warmup_steps=config.warmup_steps,
+                        max_steps=config.max_steps,
+                        min_lr=config.min_lr,
+                    )
+                    print(f"  Step {global_step}: LR = {current_lr:.2e}")
+                else:
+                    current_lr = learning_rate
+                
+                run_training_round(training_client, datums, current_lr)
+                global_step += config.steps_per_round
 
             print("Saving model checkpoint...")
             weights_uri = training_client.save_weights_for_sampler(name=f"round_{round_idx}")
