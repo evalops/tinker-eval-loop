@@ -87,6 +87,8 @@ export TINKER_API_KEY=sk-...  # Your Tinker API key
 
 This will run 1-3 training rounds, automatically adjusting the learning rate and triggering Round 2 when scores fall below threshold (0.75). Perfect for understanding the loop before customizing it.
 
+See [DEMO.md](DEMO.md) for a detailed walkthrough of what happens during the demo run.
+
 ## Quickstart
 
 1. **Install dependencies:**
