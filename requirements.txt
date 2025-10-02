@@ -5,4 +5,7 @@ inspect-ai>=0.2.0    # Inspect AI for evaluation tasks (optional but recommended
 tinker-cookbook>=0.1.0  # Tinker examples and utilities
 numpy>=1.24.0
 
+# EvalOps integration
+httpx>=0.24.0        # Async HTTP client for EvalOps API calls
+
 # Note: You may need additional packages depending on your data processing pipeline

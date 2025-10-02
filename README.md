@@ -37,15 +37,48 @@ This project contains two main components:
    export TINKER_API_KEY=sk-...
    ```
 
-3. **Prepare your data** (e.g., instruction/output pairs in JSON or JSONL format) and update `eval_loop_config.json` with the correct paths. Optionally specify evaluation tasks and thresholds.
+3. **(Optional) Configure EvalOps integration** to automatically track all evaluation results:
 
-4. **Run the evaluation‑driven loop:**
+   ```bash
+   export EVALOPS_API_KEY=your-evalops-api-key
+   export EVALOPS_API_URL=https://api.evalops.dev  # or your self-hosted instance
+   ```
+
+   Then update `eval_loop_config.json` to enable EvalOps:
+
+   ```json
+   {
+     ...
+     "evalops_enabled": true,
+     "evalops_test_suite_id": "your-test-suite-id"
+   }
+   ```
+
+4. **Prepare your data** (e.g., instruction/output pairs in JSON or JSONL format) and update `eval_loop_config.json` with the correct paths. Optionally specify evaluation tasks and thresholds.
+
+5. **Run the evaluation‑driven loop:**
 
    ```bash
    python trainer_with_eval.py --config eval_loop_config.json
    ```
 
-   The script will fine‑tune the specified base model using LoRA, run evaluations, and iteratively improve the model until it meets your quality targets or a maximum number of rounds.
+   The script will fine‑tune the specified base model using LoRA, run evaluations, and iteratively improve the model until it meets your quality targets or a maximum number of rounds. If EvalOps integration is enabled, each evaluation round will be automatically submitted to your EvalOps workspace for tracking and analysis.
+
+## EvalOps Integration
+
+This project includes built-in integration with [EvalOps](https://evalops.dev) to automatically track evaluation results across training rounds. The `evalops_client.py` module provides a lightweight Python SDK that:
+
+- Submits each training round's evaluation results as a test run in EvalOps
+- Tracks metrics, model checkpoints, and metadata for each iteration
+- Enables centralized monitoring and comparison of fine-tuning experiments
+
+To use EvalOps integration:
+
+1. Create a test suite in your EvalOps workspace
+2. Set the `evalops_enabled: true` and `evalops_test_suite_id` in your config
+3. Provide your EvalOps API key via the `EVALOPS_API_KEY` environment variable
+
+The client will automatically submit results after each evaluation round, making it easy to track progress over time and compare different fine-tuning runs.
 
 ## Extending this project
 
@@ -57,7 +90,7 @@ This is a minimal prototype to demonstrate how to build a useful system on top o
 
 - **Feedback integration** from users or human graders to generate reward signals for RL fine‑tuning (Tinker supports PPO and importance‑sampling losses).
 
-- **Integration with EvalOps**, using your existing evaluation pipelines to drive the fine‑tuning loop.
+- **Advanced EvalOps features**, such as quality gates, automated alerts when metrics drop below thresholds, or integration with regression testing schedules.
 
 ## Disclaimer
 
