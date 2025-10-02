@@ -196,26 +196,38 @@ async def run_evaluations(
     If EvalOps integration is enabled, results are submitted automatically.
 
     Args:
-        model_path: The path to the model checkpoint.  For Tinker models, use
-            the `tinker://...` syntax as described in the docs.
-        model_name: The name of the base model used (e.g., "meta-llama/Llama-3.1-8B").
-        tasks: A list of evaluation task identifiers (e.g., "inspect_evals/ifeval").
-        renderer_name: The name of the renderer to use for message formatting.
-        threshold: A target score; used to decide whether training should continue.
-        evalops_client: Optional EvalOps client for submitting results.
-        test_suite_id: Optional test suite ID in EvalOps.
-        round_number: Optional training round number.
+        model_path: Model checkpoint path (tinker://... or mock://...).
+        model_name: Base model name (e.g., "meta-llama/Llama-3.1-8B").
+        tasks: Evaluation task identifiers.
+        renderer_name: Renderer for message formatting.
+        threshold: Target score for training continuation.
+        service_client: Tinker service client for sampling.
+        training_client: Training client for simple eval fallback.
+        evalops_client: Optional EvalOps client.
+        test_suite_id: Optional EvalOps test suite ID.
+        round_number: Current training round.
 
     Returns:
-        A float representing the aggregated evaluation score.  Higher is better.
+        Aggregate evaluation score (0.0-1.0).
     """
-    if run_simple_evaluation is not None:
+    if INSPECT_AVAILABLE and run_inspect_evaluation and service_client and not model_path.startswith("mock://"):
+        try:
+            score = await run_inspect_evaluation(
+                service_client, model_path, model_name, renderer_name, tasks
+            )
+            print(f"  Inspect AI evaluation: {score:.4f}")
+        except Exception as e:
+            print(f"  Inspect AI failed ({e}), using simple evaluator")
+            score = run_simple_evaluation(
+                training_client, model_path, tasks, round_number=round_number or 1
+            ) if run_simple_evaluation else np.random.rand()
+    elif run_simple_evaluation is not None:
         score = run_simple_evaluation(
             training_client, model_path, tasks, round_number=round_number or 1
         )
     else:
         score = np.random.rand()
-        print(f"  Using simulated score: {score:.4f} (implement real evaluation for production)")
+        print(f"  Using simulated score: {score:.4f}")
 
     if evalops_client and test_suite_id:
         try:
