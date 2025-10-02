@@ -63,6 +63,7 @@ Such a loop can be particularly useful for domains where quality requirements ar
 
 ## Features
 
+- **Mock Mode**: Run the entire demo locally without Tinker API (perfect for CI and reviewers)
 - **Proper Tinker Integration**: Uses renderers for correct loss masking, async futures for performance, and recommended LR schedules
 - **EvalOps Integration**: Optional automatic submission of evaluation results for centralized tracking
 - **Pydantic Config Validation**: Type-safe configuration with clear error messages
