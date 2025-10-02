@@ -4,7 +4,8 @@ Structured logging utilities for the training loop.
 
 import json
 import logging
-import sys from datetime import datetime
+import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
