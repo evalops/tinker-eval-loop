@@ -113,7 +113,7 @@ class TestEvalOpsClient:
         )
 
         async with EvalOpsClient(api_key="test-key", api_url="https://test.evalops.dev") as client:
-            result = await client.submit_training_results(
+            await client.submit_training_results(
                 test_suite_id="suite-123",
                 round_number=2,
                 model_checkpoint="tinker://checkpoint-uri",
