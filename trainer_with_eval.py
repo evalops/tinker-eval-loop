@@ -67,6 +67,7 @@ def prepare_training_data(
     train_file: str,
     tokenizer,
     max_seq_length: int = 2048,
+    renderer_name: str = "llama3",
     deduplicate: bool = True,
 ) -> list:
     """Load and convert training data into a list of Tinker Datum objects.
@@ -81,6 +82,7 @@ def prepare_training_data(
         train_file: Path to the training JSON/JSONL file.
         tokenizer: A tokenizer object obtained from the Tinker training client.
         max_seq_length: Maximum sequence length for tokenization.
+        renderer_name: Name of the renderer for proper formatting.
         deduplicate: Whether to deduplicate examples.
 
     Returns:
@@ -91,7 +93,7 @@ def prepare_training_data(
         return []
 
     loader = DataLoader(max_seq_length=max_seq_length)
-    return loader.prepare_training_data(train_file, tokenizer, deduplicate=deduplicate)
+    return loader.prepare_training_data(train_file, tokenizer, renderer_name, deduplicate)
 
 
 async def run_training_round_async(

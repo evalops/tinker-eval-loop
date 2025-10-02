@@ -47,9 +47,12 @@ class TestTrainingLoop:
 
         mock_client = MagicMock()
         mock_training_client = MagicMock()
+        del mock_training_client.forward_backward_async
         mock_client.create_lora_training_client.return_value = mock_training_client
         mock_training_client.get_tokenizer.return_value = MagicMock()
-        mock_training_client.save_state.return_value = "tinker://checkpoint-1"
+        mock_training_client.save_weights_for_sampler.return_value = MagicMock()
+        mock_training_client.forward_backward.return_value = MagicMock()
+        mock_training_client.optim_step.return_value = MagicMock()
 
         with patch("trainer_with_eval.tinker.ServiceClient", return_value=mock_client):
             with patch("trainer_with_eval.prepare_training_data", return_value=[MagicMock()]):
@@ -76,9 +79,12 @@ class TestTrainingLoop:
 
         mock_client = MagicMock()
         mock_training_client = MagicMock()
+        del mock_training_client.forward_backward_async
         mock_client.create_lora_training_client.return_value = mock_training_client
         mock_training_client.get_tokenizer.return_value = MagicMock()
-        mock_training_client.save_state.return_value = "tinker://checkpoint"
+        mock_training_client.save_weights_for_sampler.return_value = MagicMock()
+        mock_training_client.forward_backward.return_value = MagicMock()
+        mock_training_client.optim_step.return_value = MagicMock()
 
         with patch("trainer_with_eval.tinker.ServiceClient", return_value=mock_client):
             with patch("trainer_with_eval.prepare_training_data", return_value=[MagicMock()]):
@@ -109,9 +115,12 @@ class TestTrainingLoop:
 
         mock_tinker_client = MagicMock()
         mock_training_client = MagicMock()
+        del mock_training_client.forward_backward_async
         mock_tinker_client.create_lora_training_client.return_value = mock_training_client
         mock_training_client.get_tokenizer.return_value = MagicMock()
-        mock_training_client.save_state.return_value = "tinker://checkpoint"
+        mock_training_client.save_weights_for_sampler.return_value = MagicMock()
+        mock_training_client.forward_backward.return_value = MagicMock()
+        mock_training_client.optim_step.return_value = MagicMock()
 
         async def mock_run_evals(*args, **kwargs):
             evalops_client = kwargs.get('evalops_client')
@@ -155,7 +164,7 @@ class TestTrainingLoop:
 
         mock_client = MagicMock()
         mock_training_client = MagicMock()
-        mock_training_client.forward_backward_async = None
+        del mock_training_client.forward_backward_async
         mock_client.create_lora_training_client.return_value = mock_training_client
         mock_training_client.get_tokenizer.return_value = MagicMock()
         mock_training_client.save_weights_for_sampler.return_value = MagicMock()
@@ -167,4 +176,4 @@ class TestTrainingLoop:
                 with patch("trainer_with_eval.run_evaluations", new=AsyncMock(return_value=0.7)):
                     await async_main(str(config_file))
 
-        assert mock_training_client.forward_backward.call_count == 3
+        assert mock_training_client.save_weights_for_sampler.call_count == 3
