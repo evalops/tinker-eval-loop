@@ -148,28 +148,23 @@ class TestTrainingLoop:
             f'"learning_rate": 1.0, '
             f'"lr_decay": 0.5, '
             f'"eval_threshold": 0.99, '
-            f'"warmup_steps": 0'
+            f'"warmup_steps": 0, '
+            f'"steps_per_round": 1'
             f'}}'
         )
 
-        observed_lrs = []
-
-        def mock_training_round(client, datums, lr):
-            observed_lrs.append(lr)
-
         mock_client = MagicMock()
         mock_training_client = MagicMock()
+        mock_training_client.forward_backward_async = None
         mock_client.create_lora_training_client.return_value = mock_training_client
         mock_training_client.get_tokenizer.return_value = MagicMock()
         mock_training_client.save_weights_for_sampler.return_value = MagicMock()
+        mock_training_client.forward_backward.return_value = MagicMock()
+        mock_training_client.optim_step.return_value = MagicMock()
 
         with patch("trainer_with_eval.tinker.ServiceClient", return_value=mock_client):
             with patch("trainer_with_eval.prepare_training_data", return_value=[MagicMock()]):
                 with patch("trainer_with_eval.run_evaluations", new=AsyncMock(return_value=0.7)):
-                    with patch("trainer_with_eval.run_training_round", side_effect=mock_training_round):
-                        await async_main(str(config_file))
+                    await async_main(str(config_file))
 
-        assert len(observed_lrs) == 3
-        assert observed_lrs[0] == 1.0
-        assert observed_lrs[1] == 0.5
-        assert observed_lrs[2] == 0.25
+        assert mock_training_client.forward_backward.call_count == 3
