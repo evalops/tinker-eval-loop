@@ -23,6 +23,7 @@ import argparse
 import asyncio
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -64,12 +65,14 @@ try:
     from data_loader import DataLoader
     from simple_eval import run_simple_evaluation
     from hyperparam_utils import get_recommended_lr, get_lr_with_warmup
+    from logger import StructuredLogger
 except ImportError:
     TrainingConfig = None
     DataLoader = None
     run_simple_evaluation = None
     get_recommended_lr = None
     get_lr_with_warmup = None
+    StructuredLogger = None
 
 
 def prepare_training_data(
@@ -245,6 +248,15 @@ async def async_main(config_path: str) -> None:
     if tinker is None and not USE_MOCK:
         raise ImportError("The `tinker` package is not installed. Please install it via `pip install tinker` or run in mock mode with TINKER_MOCK=1.")
 
+    run_dir = Path("runs") / datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_dir.mkdir(parents=True, exist_ok=True)
+    
+    logger = StructuredLogger(run_dir=run_dir) if StructuredLogger else None
+    
+    if logger:
+        logger.log_config(config.model_dump())
+        print(f"Logging to {run_dir}/metrics.jsonl")
+
     service_client = tinker.ServiceClient()
     base_model = config.base_model
     max_rounds = config.max_rounds
@@ -332,6 +344,9 @@ async def async_main(config_path: str) -> None:
             weights_uri = training_client.save_weights_for_sampler(name=f"round_{round_idx}")
             state_uri = weights_uri.result().path if hasattr(weights_uri, 'result') else weights_uri
             print(f"Checkpoint saved at {state_uri}")
+            
+            if logger:
+                logger.log_checkpoint(round_idx, state_uri)
 
             print("Running evaluations...")
             score = await run_evaluations(
@@ -346,6 +361,9 @@ async def async_main(config_path: str) -> None:
                 round_number=round_idx,
             )
             print(f"Evaluation score: {score:.4f}")
+            
+            if logger:
+                logger.log_evaluation(round_idx, score, eval_threshold, score >= eval_threshold)
 
             if score >= eval_threshold:
                 print(f"Target met: {score:.4f} >= {eval_threshold}.  Stopping.")
