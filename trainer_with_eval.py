@@ -67,6 +67,7 @@ try:
     from hyperparam_utils import get_recommended_lr, get_lr_with_warmup
     from logger import StructuredLogger
     from checkpoint_manager import CheckpointManager, find_latest_run
+    from inspect_eval import run_inspect_evaluation, INSPECT_AVAILABLE
 except ImportError:
     TrainingConfig = None
     DataLoader = None
@@ -76,6 +77,8 @@ except ImportError:
     StructuredLogger = None
     CheckpointManager = None
     find_latest_run = None
+    run_inspect_evaluation = None
+    INSPECT_AVAILABLE = False
 
 
 def prepare_training_data(
@@ -177,6 +180,7 @@ async def run_evaluations(
     tasks: list,
     renderer_name: str,
     threshold: float,
+    service_client: Optional[Any] = None,
     training_client: Optional[Any] = None,
     evalops_client: Optional[Any] = None,
     test_suite_id: Optional[str] = None,
@@ -399,6 +403,7 @@ async def async_main(config_path: str, resume: bool = False) -> None:
                 tasks=tasks,
                 renderer_name=renderer_name,
                 threshold=eval_threshold,
+                service_client=service_client,
                 training_client=training_client,
                 evalops_client=evalops_client,
                 test_suite_id=test_suite_id,
