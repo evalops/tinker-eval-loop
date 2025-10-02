@@ -163,7 +163,7 @@ def run_training_round(training_client, datums: list, learning_rate: float) -> N
         datums: List of Datum objects representing the training batch.
         learning_rate: Learning rate for the optimizer.
     """
-    fwd_result = training_client.forward_backward(datums, loss_fn="cross_entropy")
+    training_client.forward_backward(datums, loss_fn="cross_entropy")
     training_client.optim_step(types.AdamParams(learning_rate=learning_rate))
 
 

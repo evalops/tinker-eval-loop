@@ -170,7 +170,7 @@ class TestDataLoader:
         loader = DataLoader()
         tokenizer = MockTokenizer()
 
-        datums = loader.prepare_training_data(str(jsonl_file), tokenizer, deduplicate=True)
+        loader.prepare_training_data(str(jsonl_file), tokenizer, deduplicate=True)
 
         captured = capsys.readouterr()
         assert "Deduplicated to 2 unique examples" in captured.out
@@ -187,7 +187,7 @@ class TestDataLoader:
         loader = DataLoader()
         tokenizer = MockTokenizer()
 
-        datums = loader.prepare_training_data(str(jsonl_file), tokenizer)
+        loader.prepare_training_data(str(jsonl_file), tokenizer)
 
         captured = capsys.readouterr()
         assert "Filtered to 1 valid examples" in captured.out
