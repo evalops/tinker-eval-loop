@@ -7,8 +7,7 @@ Allows running the evaluation loop without cloud API access.
 import asyncio
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-import numpy as np
+from typing import Any, List, Optional
 
 
 class MockTokenizer:

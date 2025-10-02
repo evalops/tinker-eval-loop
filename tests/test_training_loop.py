@@ -4,8 +4,6 @@ Integration tests for the training loop.
 
 import sys
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
-import tempfile
-from pathlib import Path
 
 import pytest
 

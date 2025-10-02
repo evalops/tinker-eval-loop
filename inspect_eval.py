@@ -2,7 +2,7 @@
 Inspect AI evaluation integration with Tinker sampling.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 try:
     from inspect_ai import Task, task, eval_async

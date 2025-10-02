@@ -21,11 +21,10 @@ pipeline.  Fill in the TODOs with your own logic.
 """
 import argparse
 import asyncio
-import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
 import numpy as np
 
@@ -45,13 +44,7 @@ else:
         types = None
 
 try:
-    from inspect_ai import Task, task
-    from inspect_ai.dataset import MemoryDataset, Sample
-    from inspect_ai.model import GenerateConfig as InspectAIGenerateConfig
     from inspect_ai.model import Model as InspectAIModel
-    from inspect_ai.scorer import model_graded_qa
-    from inspect_ai.solver import generate
-    from tinker_cookbook.eval.inspect_utils import InspectAPIFromTinkerSampling
 except Exception:
     InspectAIModel = None
 

@@ -4,7 +4,7 @@ Data loading utilities for preparing training data from JSONL files.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import os
 

@@ -5,7 +5,7 @@ Error handling utilities with retries and exponential backoff.
 import asyncio
 import time
 from functools import wraps
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, TypeVar
 
 T = TypeVar('T')
 
