@@ -1,0 +1,13 @@
+{
+  "base_model": "meta-llama/Llama-3.1-8B-Instruct",
+  "train_file": "data/train.jsonl",
+  "eval_tasks": [
+    "inspect_evals/ifeval",
+    "inspect_evals/mmlu_0_shot"
+  ],
+  "renderer_name": "llama3",
+  "learning_rate": 0.0002,
+  "eval_threshold": 0.85,
+  "max_rounds": 3,
+  "lr_decay": 0.8
+}

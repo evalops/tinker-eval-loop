@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data and checkpoints
+data/
+checkpoints/
+*.pth
+*.bin
+
+# Environment
+.env
+.env.local
+
+# macOS
+.DS_Store
