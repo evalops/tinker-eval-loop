@@ -1,0 +1,28 @@
+{
+  "round_idx": 3,
+  "global_step": 3,
+  "learning_rate": 0.25,
+  "checkpoint_uri": "<MagicMock name='mock.create_lora_training_client().save_weights_for_sampler().result().path' id='4503095008'>",
+  "config": {
+    "base_model": "test-model",
+    "train_file": "/private/var/folders/1s/sm2bn6kd64gdnv757t9qshcm0000gn/T/pytest-of-jonathanhaas/pytest-41/test_lr_decay_across_rounds0/train.jsonl",
+    "eval_tasks": [],
+    "renderer_name": "default",
+    "learning_rate": 1.0,
+    "eval_threshold": 0.99,
+    "max_rounds": 3,
+    "lr_decay": 0.5,
+    "evalops_enabled": false,
+    "evalops_test_suite_id": null,
+    "evalops_api_url": null,
+    "steps_per_round": 1,
+    "batch_size": 8,
+    "max_seq_length": 2048,
+    "lora_rank": 16,
+    "warmup_steps": 0,
+    "max_steps": 1000,
+    "min_lr": 1e-06,
+    "use_recommended_lr": false
+  },
+  "timestamp": "2025-10-01T18:52:48.433866"
+}

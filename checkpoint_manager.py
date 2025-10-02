@@ -43,7 +43,7 @@ class CheckpointManager:
             "round_idx": round_idx,
             "global_step": global_step,
             "learning_rate": learning_rate,
-            "checkpoint_uri": checkpoint_uri,
+            "checkpoint_uri": str(checkpoint_uri),
             "config": config,
             "timestamp": datetime.now().isoformat(),
         }

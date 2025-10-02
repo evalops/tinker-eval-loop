@@ -1,0 +1,7 @@
+{"timestamp": "2025-10-01T18:52:58.032742", "run_id": "20251001_185258", "event": "config", "base_model": "meta-llama/Llama-3.1-8B-Instruct", "train_file": "demo_data.jsonl", "eval_tasks": ["simple_qa"], "renderer_name": "llama3", "learning_rate": 0.0003, "eval_threshold": 0.75, "max_rounds": 3, "lr_decay": 0.6, "evalops_enabled": false, "evalops_test_suite_id": "", "evalops_api_url": null, "steps_per_round": 5, "batch_size": 4, "max_seq_length": 512, "lora_rank": 16, "warmup_steps": 100, "max_steps": 1000, "min_lr": 1e-06, "use_recommended_lr": false}
+{"timestamp": "2025-10-01T18:52:58.144341", "run_id": "20251001_185258", "event": "checkpoint", "round": 1, "checkpoint_uri": "mock://checkpoint/round_1"}
+{"timestamp": "2025-10-01T18:52:58.144892", "run_id": "20251001_185258", "event": "evaluation", "round": 1, "score": 0.4, "threshold": 0.75, "passed": false, "metrics": {}}
+{"timestamp": "2025-10-01T18:52:58.256871", "run_id": "20251001_185258", "event": "checkpoint", "round": 2, "checkpoint_uri": "mock://checkpoint/round_2"}
+{"timestamp": "2025-10-01T18:52:58.257349", "run_id": "20251001_185258", "event": "evaluation", "round": 2, "score": 0.6, "threshold": 0.75, "passed": false, "metrics": {}}
+{"timestamp": "2025-10-01T18:52:58.368808", "run_id": "20251001_185258", "event": "checkpoint", "round": 3, "checkpoint_uri": "mock://checkpoint/round_3"}
+{"timestamp": "2025-10-01T18:52:58.370565", "run_id": "20251001_185258", "event": "evaluation", "round": 3, "score": 1.0, "threshold": 0.75, "passed": true, "metrics": {}}
