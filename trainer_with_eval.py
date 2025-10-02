@@ -94,12 +94,59 @@ def prepare_training_data(
     return loader.prepare_training_data(train_file, tokenizer, deduplicate=deduplicate)
 
 
-def run_training_round(training_client, datums: list, learning_rate: float) -> None:
-    """Run one round of training on a batch of data.
+async def run_training_round_async(
+    training_client,
+    datums: list,
+    batch_size: int,
+    steps_per_round: int,
+    base_lr: float,
+    step_offset: int = 0,
+    warmup_steps: int = 0,
+    max_steps: int = 1000,
+    min_lr: float = 1e-6,
+) -> int:
+    """Run one round of training with proper batching and async futures.
 
     Args:
-        training_client: The Tinker training client (LoRA) returned by
-            `ServiceClient.create_lora_training_client`.
+        training_client: The Tinker training client (LoRA).
+        datums: List of all Datum objects.
+        batch_size: Number of examples per batch.
+        steps_per_round: Number of training steps to run.
+        base_lr: Base learning rate.
+        step_offset: Global step offset for LR scheduling.
+        warmup_steps: Number of warmup steps.
+        max_steps: Total steps for cosine decay.
+        min_lr: Minimum LR floor.
+
+    Returns:
+        Number of steps executed.
+    """
+    batches = [datums[i:i+batch_size] for i in range(0, len(datums), batch_size)]
+    steps_to_run = min(steps_per_round, len(batches))
+    
+    for step_idx in range(steps_to_run):
+        batch = batches[step_idx % len(batches)]
+        global_step = step_offset + step_idx
+        
+        if get_lr_with_warmup and warmup_steps > 0:
+            lr = get_lr_with_warmup(global_step, base_lr, warmup_steps, max_steps, min_lr)
+        else:
+            lr = base_lr
+        
+        fwd_future = await training_client.forward_backward_async(batch, loss_fn="cross_entropy")
+        await fwd_future
+        
+        optim_future = await training_client.optim_step_async(types.AdamParams(learning_rate=lr))
+        await optim_future
+    
+    return steps_to_run
+
+
+def run_training_round(training_client, datums: list, learning_rate: float) -> None:
+    """Legacy sync training round (kept for backward compatibility).
+
+    Args:
+        training_client: The Tinker training client (LoRA).
         datums: List of Datum objects representing the training batch.
         learning_rate: Learning rate for the optimizer.
     """
