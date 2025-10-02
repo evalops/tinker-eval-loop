@@ -66,6 +66,7 @@ try:
     from simple_eval import run_simple_evaluation
     from hyperparam_utils import get_recommended_lr, get_lr_with_warmup
     from logger import StructuredLogger
+    from checkpoint_manager import CheckpointManager, find_latest_run
 except ImportError:
     TrainingConfig = None
     DataLoader = None
@@ -73,6 +74,8 @@ except ImportError:
     get_recommended_lr = None
     get_lr_with_warmup = None
     StructuredLogger = None
+    CheckpointManager = None
+    find_latest_run = None
 
 
 def prepare_training_data(
@@ -238,7 +241,7 @@ async def run_evaluations(
     return score
 
 
-async def async_main(config_path: str) -> None:
+async def async_main(config_path: str, resume: bool = False) -> None:
     """Main training loop with async EvalOps integration."""
     if TrainingConfig is None:
         raise ImportError("config_schema module required. Please ensure all dependencies are installed.")
@@ -248,12 +251,38 @@ async def async_main(config_path: str) -> None:
     if tinker is None and not USE_MOCK:
         raise ImportError("The `tinker` package is not installed. Please install it via `pip install tinker` or run in mock mode with TINKER_MOCK=1.")
 
-    run_dir = Path("runs") / datetime.now().strftime("%Y%m%d_%H%M%S")
+    start_round = 1
+    start_step = 0
+    start_lr = None
+    checkpoint_to_load = None
+    
+    if resume and find_latest_run:
+        latest_run = find_latest_run()
+        if latest_run and CheckpointManager:
+            mgr = CheckpointManager(latest_run)
+            saved_state = mgr.load_run_state()
+            if saved_state:
+                start_round = saved_state["round_idx"] + 1
+                start_step = saved_state["global_step"]
+                start_lr = saved_state["learning_rate"]
+                checkpoint_to_load = saved_state.get("checkpoint_uri")
+                run_dir = latest_run
+                print(f"Resuming from round {start_round}, step {start_step}")
+                print(f"Loading checkpoint: {checkpoint_to_load}")
+            else:
+                print("No saved state found, starting fresh")
+                run_dir = Path("runs") / datetime.now().strftime("%Y%m%d_%H%M%S")
+        else:
+            run_dir = Path("runs") / datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        run_dir = Path("runs") / datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     run_dir.mkdir(parents=True, exist_ok=True)
     
     logger = StructuredLogger(run_dir=run_dir) if StructuredLogger else None
+    checkpoint_mgr = CheckpointManager(run_dir) if CheckpointManager else None
     
-    if logger:
+    if logger and not resume:
         logger.log_config(config.model_dump())
         print(f"Logging to {run_dir}/metrics.jsonl")
 
@@ -264,13 +293,15 @@ async def async_main(config_path: str) -> None:
     tasks = config.eval_tasks
     renderer_name = config.renderer_name
 
-    if config.use_recommended_lr and get_recommended_lr:
+    if start_lr:
+        learning_rate = start_lr
+    elif config.use_recommended_lr and get_recommended_lr:
         learning_rate = get_recommended_lr(base_model)
         print(f"Using recommended LR for {base_model}: {learning_rate:.2e}")
     else:
         learning_rate = config.learning_rate
     
-    global_step = 0
+    global_step = start_step
 
     evalops_enabled = config.evalops_enabled
     test_suite_id = config.evalops_test_suite_id
@@ -295,6 +326,10 @@ async def async_main(config_path: str) -> None:
     )
 
     tokenizer = training_client.get_tokenizer()
+    
+    if checkpoint_to_load:
+        print("Loading training state from checkpoint...")
+        training_client.load_state(checkpoint_to_load)
 
     datums = prepare_training_data(
         train_file=config.train_file,
@@ -307,7 +342,7 @@ async def async_main(config_path: str) -> None:
         print("Warning: no training data loaded. Check that your training file has valid examples.")
 
     try:
-        for round_idx in range(1, max_rounds + 1):
+        for round_idx in range(start_round, max_rounds + 1):
             print(f"\n=== Training round {round_idx}/{max_rounds} ===")
             
             if hasattr(training_client, 'forward_backward_async'):
@@ -347,6 +382,15 @@ async def async_main(config_path: str) -> None:
             
             if logger:
                 logger.log_checkpoint(round_idx, state_uri)
+            
+            if checkpoint_mgr:
+                checkpoint_mgr.save_run_state(
+                    round_idx=round_idx,
+                    global_step=global_step,
+                    learning_rate=learning_rate,
+                    checkpoint_uri=state_uri,
+                    config=config.model_dump(),
+                )
 
             print("Running evaluations...")
             score = await run_evaluations(
@@ -381,9 +425,10 @@ async def async_main(config_path: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluation‑driven fine‑tuning loop")
     parser.add_argument("--config", type=str, required=True, help="Path to configuration JSON file")
+    parser.add_argument("--resume", action="store_true", help="Resume from latest checkpoint")
     args = parser.parse_args()
 
-    asyncio.run(async_main(args.config))
+    asyncio.run(async_main(args.config, resume=args.resume))
 
 
 if __name__ == "__main__":
