@@ -76,6 +76,17 @@ This project contains two main components:
 | `requirements.txt` | Dependencies required to run the script. |
 | `tests/` | Unit and integration tests for all components. |
 
+## Quick Demo
+
+Try the minimal working demo (uses 20 sample QA pairs and simulated evaluation):
+
+```bash
+export TINKER_API_KEY=sk-...  # Your Tinker API key
+./run_demo.sh
+```
+
+This will run 1-3 training rounds, automatically adjusting the learning rate and triggering Round 2 when scores fall below threshold (0.75). Perfect for understanding the loop before customizing it.
+
 ## Quickstart
 
 1. **Install dependencies:**
