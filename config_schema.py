@@ -61,6 +61,9 @@ class TrainingConfig(BaseModel):
     max_seq_length: int = Field(
         default=2048, ge=128, le=32768, description="Maximum sequence length"
     )
+    lora_rank: int = Field(
+        default=16, ge=1, le=256, description="LoRA rank (adapter dimension)"
+    )
     
     @field_validator("train_file")
     @classmethod

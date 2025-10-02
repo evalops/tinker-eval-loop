@@ -208,8 +208,11 @@ async def async_main(config_path: str) -> None:
             except ValueError as e:
                 print(f"Warning: Could not initialize EvalOps client: {e}")
 
-    print(f"Creating LoRA training client for {base_model}...")
-    training_client = service_client.create_lora_training_client(base_model=base_model)
+    print(f"Creating LoRA training client for {base_model} (rank={config.lora_rank})...")
+    training_client = service_client.create_lora_training_client(
+        base_model=base_model,
+        rank=config.lora_rank,
+    )
 
     tokenizer = training_client.get_tokenizer()
 
