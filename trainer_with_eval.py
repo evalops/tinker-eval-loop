@@ -54,10 +54,13 @@ try:
     from config_schema import TrainingConfig, load_and_validate_config
     from data_loader import DataLoader
     from simple_eval import run_simple_evaluation
+    from hyperparam_utils import get_recommended_lr, get_lr_with_warmup
 except ImportError:
     TrainingConfig = None
     DataLoader = None
     run_simple_evaluation = None
+    get_recommended_lr = None
+    get_lr_with_warmup = None
 
 
 def prepare_training_data(
@@ -232,7 +235,8 @@ async def async_main(config_path: str) -> None:
             run_training_round(training_client, datums, learning_rate)
 
             print("Saving model checkpoint...")
-            state_uri = training_client.save_state()
+            weights_uri = training_client.save_weights_for_sampler(name=f"round_{round_idx}")
+            state_uri = weights_uri.result().path if hasattr(weights_uri, 'result') else weights_uri
             print(f"Checkpoint saved at {state_uri}")
 
             print("Running evaluations...")

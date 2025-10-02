@@ -64,6 +64,18 @@ class TrainingConfig(BaseModel):
     lora_rank: int = Field(
         default=16, ge=1, le=256, description="LoRA rank (adapter dimension)"
     )
+    warmup_steps: int = Field(
+        default=100, ge=0, description="Learning rate warmup steps"
+    )
+    max_steps: int = Field(
+        default=1000, ge=1, description="Total training steps across all rounds"
+    )
+    min_lr: float = Field(
+        default=1e-6, gt=0.0, description="Minimum learning rate floor"
+    )
+    use_recommended_lr: bool = Field(
+        default=False, description="Use Tinker's recommended LR formula instead of manual LR"
+    )
     
     @field_validator("train_file")
     @classmethod
