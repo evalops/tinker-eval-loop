@@ -85,7 +85,7 @@ class StructuredLogger:
         """Log a checkpoint save."""
         self.log_event("checkpoint", {
             "round": round_num,
-            "checkpoint_uri": checkpoint_uri,
+            "checkpoint_uri": str(checkpoint_uri),
         })
     
     def log_config(self, config: Dict[str, Any]):

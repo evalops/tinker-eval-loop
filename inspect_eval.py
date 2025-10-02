@@ -10,9 +10,21 @@ try:
     from inspect_ai.model import GenerateConfig, Model
     from inspect_ai.scorer import match, includes
     from inspect_ai.solver import generate
+    
+    QA_SAMPLES = [
+        Sample(input="What is 2 + 2?", target="4"),
+        Sample(input="What is the capital of France?", target="Paris"),
+        Sample(input="What color is grass?", target="green"),
+        Sample(input="How many days in a week?", target="7"),
+        Sample(input="What is 10 x 5?", target="50"),
+    ]
+    
     INSPECT_AVAILABLE = True
 except ImportError:
     INSPECT_AVAILABLE = False
+    Task = None
+    task = None
+    QA_SAMPLES = []
 
 try:
     from tinker_cookbook.eval.inspect_utils import InspectAPIFromTinkerSampling
@@ -21,31 +33,25 @@ except ImportError:
     TINKER_INSPECT_AVAILABLE = False
 
 
-QA_SAMPLES = [
-    Sample(input="What is 2 + 2?", target="4"),
-    Sample(input="What is the capital of France?", target="Paris"),
-    Sample(input="What color is grass?", target="green"),
-    Sample(input="How many days in a week?", target="7"),
-    Sample(input="What is 10 x 5?", target="50"),
-]
-
-
-@task
-def simple_qa_task() -> Task:
+def simple_qa_task():
     """
     Simple QA evaluation task for demo purposes.
     
     Tests basic factual knowledge with exact match scoring.
     """
-    if not INSPECT_AVAILABLE:
+    if not INSPECT_AVAILABLE or not Task:
         raise ImportError("inspect_ai required for this task")
     
-    return Task(
-        name="simple_qa",
-        dataset=MemoryDataset(name="simple_qa", samples=QA_SAMPLES),
-        solver=generate(),
-        scorer=includes(),
-    )
+    @task
+    def _simple_qa() -> Task:
+        return Task(
+            name="simple_qa",
+            dataset=MemoryDataset(name="simple_qa", samples=QA_SAMPLES),
+            solver=generate(),
+            scorer=includes(),
+        )
+    
+    return _simple_qa()
 
 
 async def run_inspect_evaluation(
